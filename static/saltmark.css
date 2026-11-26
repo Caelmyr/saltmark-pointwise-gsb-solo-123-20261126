@@ -54,6 +54,10 @@ h2 { font-size: 15px; font-weight: 700; }
 .probe form { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
 .probe input { width: 57px; height: 25px; padding: 2px 3px; }
 #probe-result, #measurement-state { color: var(--green); }
+.probe.reference { border-top: 0; padding-top: 0; }
+.probe.reference b { white-space: nowrap; }
+#reference-result { color: var(--green); font-size: 12px; flex: 1 1 220px; }
+#clear-reference { margin-left: auto; min-height: 28px; padding: 3px 8px; font-size: 12px; }
 #chart { display: block; width: 100%; height: auto; min-height: 99px; }
 .legend i { display: inline-block; width: 15px; margin-right: 4px; border-top: 2px dashed var(--accent); vertical-align: middle; }
 .cover { display: flex; align-items: baseline; gap: 12px; margin: 0 15px 9px; border-bottom: 1px solid var(--line); padding-bottom: 10px; }

@@ -75,6 +75,14 @@ def create_app(directory=None):
         y = integer(request.args.get("y"), "Y", 0, card["height"] - 1)
         return jsonify(sample.point(sample.pixels(cards.photo(key)), x, y, card["settings"]))
 
+    @api.get("/cards/<key>/reference")
+    def reference(key):
+        card = cards.read(key, request.args.get("revision"))
+        x = integer(request.args.get("x"), "参考 X", 0, card["width"] - 1)
+        y = integer(request.args.get("y"), "参考 Y", 0, card["height"] - 1)
+        return jsonify(reference=sample.choose_reference(sample.pixels(cards.photo(key)), x, y,
+                                                         card["settings"]))
+
     @api.get("/cards/<key>/export/profile.csv")
     def profile(key):
         _, _, result = measurement(key)

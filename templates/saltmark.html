@@ -40,9 +40,10 @@
           <div class="modes" role="group" aria-label="原照取样">
             <button id="probe-mode" data-mode="probe" aria-pressed="true" type="button">点读</button>
             <button id="mark-mode" data-mode="mark" aria-pressed="false" type="button">取截线</button>
+            <button id="reference-mode" data-mode="reference" aria-pressed="false" type="button">取参考卡</button>
           </div>
         </div>
-        <div class="camera"><canvas id="capture" aria-label="砖样原照，可点击取样或输入原片像素坐标"></canvas></div>
+        <div class="camera"><canvas id="capture" aria-label="砖样原照，可点击取样、输入原片像素坐标或指定参考卡"></canvas></div>
         <div class="probe">
           <b>原片点读</b>
           <form id="probe-form"><label>X <input id="probe-x" type="number" min="0" step="1" required></label>
@@ -50,10 +51,16 @@
             <button type="submit">读取</button></form>
           <span id="probe-result">选择原片像素</span>
         </div>
+        <div class="probe reference">
+          <b>参考卡代表色</b>
+          <span id="reference-result">未采用参考卡 · 按原 RGB 直接判读</span>
+          <form id="reference-form"><button type="submit">预览参考</button></form>
+          <button id="clear-reference" type="button" disabled>取消参考</button>
+        </div>
       </section>
       <section class="panel profile">
         <div class="panel-head">
-          <div><h2 id="chart-title">原行浅色证据</h2><span id="chart-caption">当前截线 · 实际RGB下限 · 原片 X</span></div>
+          <div><h2 id="chart-title">原行浅色证据</h2><span id="chart-caption">当前截线 · 校正后最低分量 · 原片 X</span></div>
           <div class="modes" role="group" aria-label="当前图表">
             <button data-chart="profile" aria-pressed="true" type="button">原行剖面</button>
             <button data-chart="coverage" aria-pressed="false" type="button">原行覆盖</button>
@@ -78,7 +85,11 @@
           <label>上界 Y<input data-setting="top" type="number" step="1" min="0" required></label>
           <label>下界 Y<input data-setting="bottom" type="number" step="1" min="0" required></label>
         </div></fieldset>
-        <fieldset><legend>近中性浅色阈值</legend><div class="form-grid">
+        <fieldset><legend>参考卡 · px（参考卡实色校正；留空为原 RGB 判读）</legend><div class="form-grid">
+          <label>参考 X<input id="reference-x" data-setting="reference_x" type="number" step="1" min="0" placeholder="留空"></label>
+          <label>参考 Y<input id="reference-y" data-setting="reference_y" type="number" step="1" min="0" placeholder="留空"></label>
+        </div></fieldset>
+        <fieldset><legend>近中性浅色阈值 · 校正值 · 未判像素不计入分母</legend><div class="form-grid">
           <label>最低RGB分量<input data-setting="minimum" type="number" step="1" min="1" max="255" required></label>
           <label>最大通道差<input data-setting="spread" type="number" step="1" min="0" max="254" required></label>
         </div></fieldset>
