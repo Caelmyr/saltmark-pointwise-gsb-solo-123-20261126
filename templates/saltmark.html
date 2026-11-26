@@ -91,6 +91,70 @@
       </section>
     </aside>
   </section>
+  <section id="compare" class="panel compare" hidden>
+    <div class="panel-head">
+      <div><h2>前后对照 · 同一块砖</h2><span id="compare-caption">第二张原 X = 第一张原 X + 统一整数位移</span></div>
+      <span id="compare-state"></span>
+    </div>
+    <div class="compare-body">
+      <form id="pairing" class="pairing">
+        <label class="wide">第二张砖样卡<select id="partner" required></select></label>
+        <p id="partner-origin" class="muted"></p>
+        <fieldset><legend>上限</legend><div class="form-grid">
+          <label>移量上限 px<input data-limit="shift" type="number" min="0" step="1" required></label>
+          <label>实标剩余偏差上限 px<input data-limit="residual" type="number" min="0" step="1" required></label>
+          <label>最低共见点数<input data-limit="visible" type="number" min="1" step="1" required></label>
+        </div></fieldset>
+        <fieldset><legend>固定印记原 X 对</legend>
+          <div id="mark-rows"></div>
+          <div class="mark-add">
+            <label>第一张 X<input id="mark-first" type="number" min="0" step="1"></label>
+            <label>第二张 X<input id="mark-second" type="number" min="0" step="1"></label>
+            <button id="add-mark" type="button">加入一对</button>
+          </div>
+          <p class="muted">在两张原片上各点一处固定印记即可成对；只比较 X。</p>
+        </fieldset>
+        <button class="primary" type="submit">保存对位设置并求解</button>
+        <p id="pairing-notice" class="notice" role="status" hidden></p>
+      </form>
+      <div class="compare-view">
+        <div class="compare-shot">
+          <div class="compare-col">
+            <div class="shot-head"><b>第一张 · 原截面</b><span id="first-line-label"></span></div>
+            <div class="shot"><canvas id="compare-first" aria-label="第一张砖样原照，点原截面即可切到第二张"></canvas></div>
+          </div>
+          <div class="compare-col">
+            <div class="shot-head"><b>第二张 · 原截面</b><span id="second-line-label"></span></div>
+            <div class="shot"><canvas id="compare-second" aria-label="第二张砖样原照"></canvas></div>
+          </div>
+        </div>
+        <div class="compare-summary">
+          <div class="cover"><span>统一位移</span><strong id="shift-value">—</strong><span class="unit">px</span></div>
+          <p id="solution-detail">选定第二张并保存固定印记后求解。</p>
+          <div id="paired-readout" class="paired">点第一张原截面，切到第二张读数。</div>
+          <div id="paired-crops" class="paired-crops" hidden>
+            <figure><canvas id="crop-first" width="120" height="120"></canvas><figcaption>第一张原截面</figcaption></figure>
+            <figure><canvas id="crop-second" width="120" height="120"></canvas><figcaption>第二张对应点</figcaption></figure>
+          </div>
+        </div>
+        <div class="candidate-list">
+          <div class="section-cap">符合上限的候选整数位移</div>
+          <table id="candidates"><thead><tr><th>位移</th><th>综合</th><th>真原点重叠</th><th>共见</th><th>实标剩余偏差</th><th></th></tr></thead><tbody></tbody></table>
+        </div>
+        <div class="evidence">
+          <div class="section-cap">采用后截线判读 <span id="evidence-counts"></span></div>
+          <canvas id="evidence-chart" width="860" height="104" aria-label="截线新增、减少、未变与无证分布"></canvas>
+          <div class="legend inline">
+            <span><i style="border-color:#4f8a5b"></i>浅色新增</span>
+            <span><i style="border-color:#a8513f"></i>浅色减少</span>
+            <span><i style="border-color:#8b7f70"></i>未变</span>
+            <span><i style="border-color:#c8a441"></i>无证</span>
+          </div>
+          <a id="comparison-csv" class="export" download>对照 CSV ↓</a>
+        </div>
+      </div>
+    </div>
+  </section>
 </main>
 <dialog id="import">
   <form id="upload">

@@ -18,6 +18,23 @@ def trace_table(result):
     return target.getvalue().encode()
 
 
+def comparison_table(first, second, solved, evidence):
+    target=StringIO()
+    writer=csv.writer(target)
+    writer.writerow(("first_x","first_y","first_red","first_green","first_blue","first_pale",
+                     "second_x","second_y","second_red","second_green","second_blue","second_pale","status"))
+    for pair in evidence["points"]:
+        a,b=pair["first"],pair["second"]
+        writer.writerow((a["x"],a["y"],*a["rgb"],int(a["pale"]),b["x"],b["y"],*b["rgb"],int(b["pale"]),pair["status"]))
+    counts=evidence["counts"]
+    writer.writerow(())
+    writer.writerow(("shift_px",solved["selected"],"co_visible",counts["co_visible"],
+                     "true_overlap",solved["best"]["true_overlap"],"max_residual",solved["best"]["max_residual"],
+                     "added",counts["added"],"reduced",counts["reduced"],
+                     "unchanged",counts["unchanged"],"unproven",counts["unproven"]))
+    return target.getvalue().encode()
+
+
 def proof(image, card, result):
     height,width=image.shape[:2]
     output=Image.new("RGB",(max(430,width),height+64),"#352c2c")

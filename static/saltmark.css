@@ -90,3 +90,45 @@ dialog .top-actions { justify-content: end; }
 .primary:hover { color: #fff8ed; }
 
 .settings select { width: 100%; padding:5px 4px; font-size:12px; min-height:33px; }
+
+.compare { margin-top: 17px; }
+.compare-body { display: grid; grid-template-columns: minmax(280px,340px) minmax(0,1fr); gap: 17px; padding: 0 15px 15px; }
+.compare-body .muted, .compare .section-cap { color: var(--muted); font-size: 12px; }
+.compare .section-cap { margin: 12px 0 6px; font-weight: 700; }
+.pairing { display: grid; align-content: start; gap: 10px; }
+.pairing fieldset { border: 0; border-top: 1px solid var(--line); padding: 8px 0 0; margin: 0; display: grid; gap: 8px; }
+.pairing legend { font-weight: 700; }
+.pairing .form-grid { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.mark-add { display: flex; flex-wrap: wrap; align-items: end; gap: 7px; }
+.mark-add label { flex: 1 1 90px; }
+.mark-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px dashed var(--line); font-size: 12px; font-variant-numeric: tabular-nums; }
+.mark-row span { flex: 1; }
+.mark-row button { min-height: 25px; padding: 2px 8px; font-size: 12px; }
+.compare-view { display: grid; min-width: 0; gap: 4px; }
+.compare-shot { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; align-items: start; }
+.compare-col { display: grid; gap: 4px; min-width: 0; }
+.shot { background: #675955; border: 1px solid var(--line); border-radius: 5px; overflow: hidden; display: flex; align-items: center; justify-content: center; min-height: 90px; }
+.shot canvas { display: block; width: 100%; max-height: 30vh; object-fit: contain; cursor: crosshair; }
+.shot.second-active { outline: 2px solid #ffe09d; outline-offset: -2px; }
+.shot-head { display: flex; justify-content: space-between; gap: 6px; font-size: 12px; color: var(--muted); }
+.shot-head span { color: var(--green); }
+.paired-crops { display: flex; gap: 12px; }
+.paired-crops figure { margin: 0; text-align: center; font-size: 11px; color: var(--muted); }
+.paired-crops canvas { width: 88px; height: 88px; image-rendering: pixelated; border: 1px solid var(--line); background: #675955; }
+.compare-summary { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); padding: 9px 0; display: grid; gap: 6px; }
+.compare-summary .cover { margin: 0; border: 0; padding: 0; }
+.compare-summary .cover strong { font-size: 30px; }
+.compare-summary .unit { color: var(--muted); font-size: 12px; }
+.compare-summary p { font-size: 12px; color: var(--muted); }
+.paired { color: var(--accent) !important; min-height: 45px; }
+.candidate-list { overflow-x: auto; }
+.candidates, #candidates { width: 100%; border-collapse: collapse; font-size: 12px; font-variant-numeric: tabular-nums; }
+#candidates th, #candidates td { text-align: right; padding: 4px 8px; border-bottom: 1px solid var(--line); }
+#candidates th:first-child, #candidates td:first-child, #candidates th:last-child, #candidates td:last-child { text-align: left; }
+#candidates tr[aria-selected="true"] { background: #f1e6d7; font-weight: 700; }
+#candidates button { min-height: 24px; padding: 1px 8px; font-size: 12px; }
+#evidence-chart { display: block; width: 100%; height: auto; background: #faf7ef; border: 1px solid var(--line); border-radius: 4px; }
+.legend.inline { display: flex; flex-wrap: wrap; gap: 12px; font-size: 12px; color: var(--muted); margin-top: 6px; }
+.legend.inline i { display: inline-block; width: 13px; margin-right: 4px; border-top: 3px solid; vertical-align: middle; }
+.export { display: inline-block; margin-top: 6px; font-size: 12px; color: var(--accent); }
+@media (max-width: 980px) { .compare-body { grid-template-columns: 1fr; } }
