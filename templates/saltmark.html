@@ -57,6 +57,7 @@
           <div class="modes" role="group" aria-label="当前图表">
             <button data-chart="profile" aria-pressed="true" type="button">原行剖面</button>
             <button data-chart="coverage" aria-pressed="false" type="button">原行覆盖</button>
+            <button data-chart="cluster" aria-pressed="false" type="button">簇内覆盖</button>
           </div>
         </div>
         <canvas id="chart" width="850" height="166" aria-label="截线和浅色覆盖分布"></canvas>
@@ -66,7 +67,7 @@
       <section class="panel readout">
         <div class="panel-head"><h2>当前行浅色覆盖</h2><span id="measurement-state"></span></div>
         <div class="cover"><strong id="cover-value">—</strong><span id="cover-unit"></span></div>
-        <p id="selected-level"></p><p id="area-level"></p>
+        <p id="selected-level"></p><p id="area-level"></p><p id="cluster-level"></p>
       </section>
       <form id="calibration" class="panel settings">
         <div class="panel-head"><div><h2>测量框与浅色阈值</h2><span>使用原片像素，X 向右，Y 向下</span></div></div>

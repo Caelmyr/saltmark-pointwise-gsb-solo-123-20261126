@@ -1,6 +1,7 @@
 """Read pale, nearly neutral coverage on a photographed brick sample."""
 import numpy as np
 from PIL import Image, ImageDraw, ImageFont
+from scipy import ndimage as ndi
 
 from image_lab.validation import integer
 
@@ -8,6 +9,8 @@ from .photo import decode, pixels, png, MAX_IMAGE_BYTES
 
 
 LUMA = np.array([0.2126, 0.7152, 0.0722])
+CROSS = ndi.generate_binary_structure(2, 1)
+MIN_START_RUN = 4
 
 
 def settings(value, size):
@@ -32,6 +35,77 @@ def defaults(size):
 def pale_components(rgb):
     lowest = rgb.min(axis=-1)
     return lowest, rgb.max(axis=-1) - lowest
+
+
+def true_marks(tiles, config):
+    """Pixels usable as pale marks or bridges: thresholds met, no channel clipped at 0 or 255."""
+    floor, spread = pale_components(tiles)
+    return (floor >= config["minimum"]) & (spread <= config["spread"]) & (floor > 0) & (tiles.max(axis=-1) < 255)
+
+
+def longest_run(values):
+    best = current = 0
+    previous = None
+    for value in sorted(values):
+        current = current + 1 if previous is not None and value == previous + 1 else 1
+        best = max(best, current)
+        previous = value
+    return best
+
+
+def scaled(value, values):
+    span = max(values) - min(values)
+    return 1.0 if span == 0 else (value - min(values)) / span
+
+
+def trace_clusters(image, config):
+    """4-connected pale clusters inside the frame, on the start line and above it."""
+    x0, x1, y0 = (config[key] for key in ("left","right","top"))
+    y1 = min(config["focus"], config["bottom"])
+    found = []
+    labels = None
+    if y1 >= y0:
+        marks = true_marks(image[y0:y1+1, x0:x1+1], config)
+        labels, _ = ndi.label(marks, CROSS)
+        start_row = config["focus"] - y0
+        for cid, box in enumerate(ndi.find_objects(labels), start=1):
+            if box is None:
+                continue
+            ys, xs = np.nonzero(labels[box] == cid)
+            ys = ys + box[0].start
+            xs = xs + box[1].start
+            top = int(ys.min())
+            highest_x = xs[ys == top]
+            found.append({"id":cid, "pixels":int(ys.size), "top_y":y0+top,
+                          "reach":config["focus"]-y0-top, "edge":bool(xs.min() == 0 or xs.max() == x1-x0),
+                          "start_run":longest_run(xs[ys == start_row].tolist()),
+                          "highest":{"x":x0+int(highest_x[highest_x.size//2]), "y":y0+top}})
+    candidates = [c for c in found if not c["edge"] and c["start_run"] >= MIN_START_RUN]
+    adopted = None
+    if candidates:
+        reaches = [c["reach"] for c in candidates]
+        areas = [c["pixels"] for c in candidates]
+        for c in candidates:
+            c["score"] = round(0.5*scaled(c["reach"], reaches) + 0.5*scaled(c["pixels"], areas), 6)
+        adopted = max(candidates, key=lambda c: (c["score"], c["pixels"], c["reach"], -c["id"]))
+    spans = []
+    mask = None
+    if adopted is not None:
+        mask = labels == adopted["id"]
+        for dy, row in enumerate(mask):
+            xs = np.nonzero(row)[0]
+            if xs.size:
+                cuts = np.nonzero(np.diff(xs) > 1)[0]
+                spans += [[y0+dy, x0+int(xs[s]), x0+int(xs[e])]
+                          for s, e in zip(np.concatenate(([0], cuts+1)), np.concatenate((cuts, [xs.size-1])))]
+    rejected = {"edge_touching":sum(1 for c in found if c["edge"]),
+                "short_start":sum(1 for c in found if not c["edge"] and c["start_run"] < MIN_START_RUN)}
+    for c in candidates:
+        c["adopted"] = c is adopted
+        del c["edge"]
+    info = {"start_y":config["focus"], "candidates":candidates, "adopted":adopted, "spans":spans,
+            "rejected":rejected}
+    return mask, info
 
 
 def point(image, x, y, config):
@@ -59,14 +133,24 @@ def report(image, config):
     qualifies = (floor >= config["minimum"]) & (spread <= config["spread"])
     counts = np.count_nonzero(qualifies, axis=1)
     width = tiles.shape[1]
-    metrics = [{"y":y,"pale_pixels":int(count),"pixels":width,"fraction":int(count)/width}
-               for y,count in zip(range(y0,y1+1),counts)]
+    mask, cluster = trace_clusters(image, config)
+    metrics = []
+    for y,count in zip(range(y0,y1+1),counts):
+        row = y-y0
+        rooted = int(np.count_nonzero(mask[row])) if mask is not None and row < mask.shape[0] else 0
+        metrics.append({"y":y,"pale_pixels":int(count),"pixels":width,"fraction":int(count)/width,
+                        "cluster_pixels":rooted})
     points=profile(image,config)
+    if points:
+        row = config["focus"]-y0
+        for p in points:
+            p["cluster"] = bool(mask is not None and mask[row,p["x"]-x0])
     reading=metrics[config["focus"]-y0] if points else None
     area=int(qualifies.size)
     covered=int(counts.sum())
     return {"reading":reading,"profile":points,"rows":metrics,"focus":config["focus"],
-            "area":{"pixels":area,"pale_pixels":covered,"fraction":covered/area}}
+            "area":{"pixels":area,"pale_pixels":covered,"fraction":covered/area},
+            "cluster":cluster}
 
 
 def practice():

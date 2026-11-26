@@ -69,9 +69,28 @@ function paintSource() {
     ctx.lineTo(cfg.right,result.focus);
     ctx.stroke();
   }
-  ctx.fillStyle = "#ffdc8c";
+  const cluster = result.cluster;
+  if (cluster && cluster.spans.length) {
+    ctx.fillStyle = "rgba(99,226,164,0.36)";
+    for (const [y,x0,x1] of cluster.spans) ctx.fillRect(x0,y,x1-x0+1,1);
+  }
   for (const p of result.profile) {
-    if (p.pale) ctx.fillRect(p.x,p.y - 1,1,3);
+    if (p.pale) {
+      ctx.fillStyle = p.cluster ? "#63e2a4" : "#ffdc8c";
+      ctx.fillRect(p.x,p.y - 1,1,3);
+    }
+  }
+  if (cluster && cluster.adopted) {
+    const top = cluster.adopted.highest;
+    ctx.strokeStyle = "#ff9d5c";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(top.x-6,top.y);
+    ctx.lineTo(top.x+6,top.y);
+    ctx.moveTo(top.x,top.y-6);
+    ctx.lineTo(top.x,top.y+6);
+    ctx.stroke();
+    ctx.strokeRect(top.x-3.5,top.y-3.5,7,7);
   }
   if (probe) {
     ctx.strokeStyle = "#faf1e2";
@@ -86,13 +105,16 @@ function paintChart() {
   const {result,card} = state;
   const cfg = card.settings;
   const coverage = state.chart === "coverage";
-  const lo = coverage ? cfg.top : cfg.left;
-  const hi = coverage ? cfg.bottom : cfg.right;
-  const upper = coverage ? 100 : 255;
+  const rooted = state.chart === "cluster";
+  const framed = coverage || rooted;
+  const lo = framed ? cfg.top : cfg.left;
+  const hi = framed ? cfg.bottom : cfg.right;
+  const upper = framed ? 100 : 255;
   const xAt = (x) => 48 + (width - 84) * (x - lo) / Math.max(1,hi - lo);
   const yAt = (v) => height - 26 - (height - 44) * v / upper;
-  get("chart-title").textContent = coverage ? "各原行浅色占比" : "原行浅色证据";
-  get("chart-caption").textContent = coverage ? "实际浅色比例 % · 原片 Y" : "原片 X · 最低RGB分量";
+  get("chart-title").textContent = coverage ? "各原行浅色占比" : (rooted ? "连通簇各原行占比" : "原行浅色证据");
+  get("chart-caption").textContent = coverage ? "实际浅色比例 % · 原片 Y"
+    : (rooted ? "簇内实际像素比例 % · 原片 Y" : "原片 X · 最低RGB分量");
   ctx.fillStyle = "#faf7ef";
   ctx.fillRect(0,0,width,height);
   ctx.font = "12px monospace";
@@ -110,6 +132,7 @@ function paintChart() {
   ctx.strokeStyle = "#786760";
   ctx.lineWidth = 2;
   const data = coverage ? result.rows.map((row) => [row.y,100*row.fraction])
+    : rooted ? result.rows.map((row) => [row.y,100*row.cluster_pixels/row.pixels])
     : result.profile.map((point) => [point.x,point.floor]);
   ctx.beginPath();
   data.forEach(([pos,value],i) => {
@@ -117,7 +140,7 @@ function paintChart() {
     else ctx.moveTo(xAt(pos),yAt(value));
   });
   ctx.stroke();
-  if (!coverage) {
+  if (!framed) {
     ctx.strokeStyle = "#a66c43";
     ctx.setLineDash([5,4]);
     ctx.beginPath();
@@ -162,6 +185,13 @@ function show() {
     : "本行位于测量框外";
   get("area-level").textContent = "全框 " + result.area.pale_pixels + " / " + result.area.pixels +
     " · " + (result.area.fraction * 100).toFixed(2) + "%";
+  const adopted = result.cluster && result.cluster.adopted;
+  const rejected = result.cluster ? result.cluster.rejected : {edge_touching: 0, short_start: 0};
+  get("cluster-level").textContent = adopted
+    ? "起线连通簇 " + adopted.pixels + " 点 · 起线连续 " + adopted.start_run +
+      " · 最高点 (" + adopted.highest.x + ", " + adopted.highest.y + ") · 候选 " +
+      result.cluster.candidates.length + " 簇"
+    : "未确认到起线连通簇（触框边 " + rejected.edge_touching + " 簇 · 起线连续不足 " + rejected.short_start + " 簇）";
   for (const [id, filename] of Object.entries({proof: "proof.png", csv: "profile.csv", zip: "observation.zip"})) {
     get(id).href = "/saltmark" + route("/export/" + filename) + savedQuery();
   }
